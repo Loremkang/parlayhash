@@ -62,8 +62,8 @@
 // Needed for parlay::my_thread_id of parlay::num_thread_ids
 #include "threads/thread_specific.h"
 
-#ifndef PARLAY_EPOCH_H_
-#define PARLAY_EPOCH_H_
+#ifndef PARLAY_PARLAYHASH_EPOCH_H_
+#define PARLAY_PARLAYHASH_EPOCH_H_
 
 #ifndef NDEBUG
 // Checks for corruption of bytes before and after allocated structures, as well as double frees.
@@ -594,4 +594,4 @@ private:
 
 } // end namespace epoch
 
-#endif //PARLAY_EPOCH_H_
+#endif //PARLAY_PARLAYHASH_EPOCH_H_
