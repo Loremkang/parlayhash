@@ -367,11 +367,11 @@ struct parlay_hash {
       
       size_t bucket_size = round_up_to(sizeof(bucket)*size, align_size_2M);
       buckets = (bucket*) aligned_alloc(2ull * 1024 * 1024, bucket_size);
-      // madvise(buckets, bucket_size, MADV_HUGEPAGE);
+      madvise(buckets, bucket_size, MADV_HUGEPAGE);
 
       size_t status_size = round_up_to(sizeof(std::atomic<status>) * size/block_size, align_size_2M);
       block_status = (std::atomic<status>*) aligned_alloc(2ull * 1024 * 1024, status_size);
-      // madvise(block_status, status_size, MADV_HUGEPAGE);
+      madvise(block_status, status_size, MADV_HUGEPAGE);
 
       parallel_for(size, [&] (long i) { initialize(buckets[i]);});
       parallel_for(size/block_size, [&] (long i) { block_status[i] = Empty;});
@@ -393,11 +393,11 @@ struct parlay_hash {
 
       size_t bucket_size = round_up_to(sizeof(bucket)*size, align_size_2M);
       buckets = (bucket*) aligned_alloc(align_size_2M, bucket_size);
-      // madvise(buckets, bucket_size, MADV_HUGEPAGE);
+      madvise(buckets, bucket_size, MADV_HUGEPAGE);
       
       size_t status_size = round_up_to(sizeof(std::atomic<status>) * size/block_size, align_size_2M);
       block_status = (std::atomic<status>*) aligned_alloc(align_size_2M, status_size);
-      // madvise(block_status, status_size, MADV_HUGEPAGE);
+      madvise(block_status, status_size, MADV_HUGEPAGE);
     }
 
     ~table_version() {
