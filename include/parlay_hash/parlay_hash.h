@@ -357,8 +357,22 @@ struct parlay_hash {
 	overflow_size(get_overflow_size(num_bits))
     {
       //if (PrintGrow) std::cout << "initial size: " << size << std::endl;
-      buckets = (bucket*) malloc(sizeof(bucket)*size);
-      block_status = (std::atomic<status>*) malloc(sizeof(std::atomic<status>) * size/block_size);
+      // buckets = (bucket*) malloc(sizeof(bucket)*size);
+      // block_status = (std::atomic<status>*) malloc(sizeof(std::atomic<status>) * size/block_size);
+
+      size_t align_size_2M = 2ull * 1024 * 1024;
+      auto round_up_to = [](size_t siz, size_t align_size) {
+        return (siz + align_size - 1) & ~(align_size - 1);
+      };
+      
+      size_t bucket_size = round_up_to(sizeof(bucket)*size, align_size_2M);
+      buckets = (bucket*) aligned_alloc(2ull * 1024 * 1024, bucket_size);
+      // madvise(buckets, bucket_size, MADV_HUGEPAGE);
+
+      size_t status_size = round_up_to(sizeof(std::atomic<status>) * size/block_size, align_size_2M);
+      block_status = (std::atomic<status>*) aligned_alloc(2ull * 1024 * 1024, status_size);
+      // madvise(block_status, status_size, MADV_HUGEPAGE);
+
       parallel_for(size, [&] (long i) { initialize(buckets[i]);});
       parallel_for(size/block_size, [&] (long i) { block_status[i] = Empty;});
     }
@@ -372,8 +386,18 @@ struct parlay_hash {
 	block_size(get_block_size(num_bits)),
 	overflow_size(get_overflow_size(num_bits))
     {
-      buckets = (bucket*) malloc(sizeof(bucket)*size);
-      block_status = (std::atomic<status>*) malloc(sizeof(std::atomic<status>) * size/block_size);
+      size_t align_size_2M = 2ull * 1024 * 1024;
+      auto round_up_to = [](size_t siz, size_t align_size) {
+        return (siz + align_size - 1) & ~(align_size - 1);
+      };
+
+      size_t bucket_size = round_up_to(sizeof(bucket)*size, align_size_2M);
+      buckets = (bucket*) aligned_alloc(align_size_2M, bucket_size);
+      // madvise(buckets, bucket_size, MADV_HUGEPAGE);
+      
+      size_t status_size = round_up_to(sizeof(std::atomic<status>) * size/block_size, align_size_2M);
+      block_status = (std::atomic<status>*) aligned_alloc(align_size_2M, status_size);
+      // madvise(block_status, status_size, MADV_HUGEPAGE);
     }
 
     ~table_version() {
